@@ -3,7 +3,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import connectDatabase from './config/database.js';
-import { apiLimiter } from './config/rateLimiter.js';
 import errorHandler, { notFound } from './src/middlewares/error.middleware.js';
 import logger from './src/utils/logger.js';
 
@@ -36,8 +35,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Serve static files (uploaded media)
 app.use('/uploads', express.static('uploads'));
 
-// Apply rate limiting to all routes
-app.use('/api', apiLimiter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
