@@ -44,28 +44,7 @@ cd marketing-dashboard
 npm install
 ```
 
-3. Configure environment variables
-
-Create a `.env` file in the root directory with the following:
-
-```env
-# Server Configuration
-PORT=5000
-NODE_ENV=development
-
-# Database
-MONGODB_URI=your_mongodb_connection_string
-
-# UltraMessage WhatsApp API
-ULTRAMESSAGE_INSTANCE_ID=instance160988
-ULTRAMESSAGE_TOKEN=your_api_token
-ULTRAMESSAGE_BASE_URL=https://api.ultramsg.com/instance160988/
-
-# Messaging Configuration
-MESSAGE_DELAY_MS=1500
-```
-
-4. Start the server
+3. Start the server
 
 ```bash
 # Development mode with auto-reload
