@@ -109,8 +109,8 @@ export const createCampaign = async (req, res, next) => {
         } else {
             // Excel file input
             const excelFile = files.excelFile[0];
-            logger.info('Processing Excel file...');
-            phoneNumbers = await excelService.parseExcelFile(excelFile.path);
+            logger.info('Processing Excel file from buffer...');
+            phoneNumbers = await excelService.parseExcelFile(excelFile.buffer);
             logger.info(`Parsed ${phoneNumbers.length} phone number(s) from Excel file`);
         }
 
@@ -128,9 +128,11 @@ export const createCampaign = async (req, res, next) => {
 
             let uploadResult;
             if (mediaType === 'image') {
-                uploadResult = await cloudinaryService.uploadImage(mediaFile.path, mediaFile.originalname);
+                // Pass buffer instead of path (memory storage)
+                uploadResult = await cloudinaryService.uploadImage(mediaFile.buffer, mediaFile.originalname);
             } else if (mediaType === 'video') {
-                uploadResult = await cloudinaryService.uploadVideo(mediaFile.path, mediaFile.originalname);
+                // Pass buffer instead of path (memory storage)
+                uploadResult = await cloudinaryService.uploadVideo(mediaFile.buffer, mediaFile.originalname);
             }
 
             mediaUrl = uploadResult.url;

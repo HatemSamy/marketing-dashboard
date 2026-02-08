@@ -1,49 +1,16 @@
 import multer from 'multer';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
 import ApiError from '../src/utils/ApiError.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+/**
+ * Multer configuration for serverless environment (Vercel)
+ * Uses memory storage since serverless environments have read-only file systems
+ * Files are temporarily stored in memory, then uploaded to Cloudinary
+ */
 
-// Create uploads directories if they don't exist
-const uploadsDir = path.join(__dirname, '..', 'uploads');
-const excelDir = path.join(uploadsDir, 'excel');
-const imagesDir = path.join(uploadsDir, 'images');
-const videosDir = path.join(uploadsDir, 'videos');
+// Use memory storage (files stored as Buffer in memory)
+const storage = multer.memoryStorage();
 
-[uploadsDir, excelDir, imagesDir, videosDir].forEach(dir => {
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-    }
-});
-
-// Storage configuration
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        let uploadPath = uploadsDir;
-
-        if (file.fieldname === 'excelFile') {
-            uploadPath = excelDir;
-        } else if (file.fieldname === 'mediaFile') {
-            // Determine based on mimetype
-            if (file.mimetype.startsWith('image/')) {
-                uploadPath = imagesDir;
-            } else if (file.mimetype.startsWith('video/')) {
-                uploadPath = videosDir;
-            }
-        }
-
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-// File filter
+// File filter for validation
 const fileFilter = (req, file, cb) => {
     if (file.fieldname === 'excelFile') {
         // Accept Excel files only
@@ -75,3 +42,4 @@ const upload = multer({
 });
 
 export default upload;
+

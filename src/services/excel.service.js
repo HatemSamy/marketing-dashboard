@@ -1,30 +1,25 @@
 import xlsx from 'xlsx';
-import fs from 'fs';
 import { validateAndNormalize } from '../utils/phoneValidator.js';
 import { validateExcelStructure } from '../utils/fileValidator.js';
 import logger from '../utils/logger.js';
 import ApiError from '../utils/ApiError.js';
 
 /**
- * Excel Processing Service
+ * Excel Processing Service for Serverless Environment
+ * Works with Buffer instead of file paths
  */
 
 /**
- * Parse Excel file and extract phone numbers
- * @param {string} filePath - Path to Excel file
+ * Parse Excel file from Buffer and extract phone numbers
+ * @param {Buffer} buffer - Excel file buffer from multer memory storage
  * @returns {Promise<Array<string>>} - Array of validated phone numbers
  */
-const parseExcelFile = async (filePath) => {
+const parseExcelFile = async (buffer) => {
     try {
-        logger.info(`Parsing Excel file: ${filePath}`);
+        logger.info('Parsing Excel file from buffer');
 
-        // Check if file exists
-        if (!fs.existsSync(filePath)) {
-            throw new ApiError(400, 'Excel file not found');
-        }
-
-        // Read the Excel file
-        const workbook = xlsx.readFile(filePath);
+        // Read the Excel file from buffer
+        const workbook = xlsx.read(buffer, { type: 'buffer' });
 
         // Get the first sheet
         const sheetName = workbook.SheetNames[0];
@@ -58,14 +53,8 @@ const parseExcelFile = async (filePath) => {
 
         logger.info(`Extracted ${phoneNumbers.length} valid phone numbers from Excel`);
 
-        // Clean up - delete the file after processing
-        deleteFile(filePath);
-
         return phoneNumbers;
     } catch (error) {
-        // Clean up file even on error
-        deleteFile(filePath);
-
         if (error instanceof ApiError) {
             throw error;
         }
@@ -129,22 +118,8 @@ const extractPhoneNumbers = (data) => {
     return uniqueNumbers;
 };
 
-/**
- * Delete file safely
- * @param {string} filePath - Path to file
- */
-const deleteFile = (filePath) => {
-    try {
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-            logger.debug(`Deleted file: ${filePath}`);
-        }
-    } catch (error) {
-        logger.error(`Failed to delete file ${filePath}:`, error.message);
-    }
-};
-
 // Export service methods
 export default {
     parseExcelFile
 };
+

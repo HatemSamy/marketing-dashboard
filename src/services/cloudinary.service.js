@@ -1,41 +1,49 @@
 import cloudinary from '../../config/cloudinary.js';
 import logger from '../utils/logger.js';
 import ApiError from '../utils/ApiError.js';
-import fs from 'fs/promises';
+import { Readable } from 'stream';
 
 /**
- * Cloudinary Service
- * Handles uploading images and videos to Cloudinary
+ * Cloudinary Service for Serverless Environment
+ * Handles uploading images and videos from Buffer (memory storage)
  */
 
 /**
- * Upload image to Cloudinary
- * @param {string} filePath - Local file path
+ * Upload image to Cloudinary from Buffer
+ * @param {Buffer} buffer - File buffer from multer memory storage
  * @param {string} originalName - Original filename
  * @returns {Promise<{url: string, publicId: string}>}
  */
-export const uploadImage = async (filePath, originalName) => {
+export const uploadImage = async (buffer, originalName) => {
     try {
         logger.info(`Uploading image to Cloudinary: ${originalName}`);
 
-        const result = await cloudinary.uploader.upload(filePath, {
-            folder: 'whatsapp-campaigns/images',
-            resource_type: 'image',
-            use_filename: true,
-            unique_filename: true
+        return new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    folder: 'whatsapp-campaigns/images',
+                    resource_type: 'image',
+                    use_filename: true,
+                    unique_filename: true
+                },
+                (error, result) => {
+                    if (error) {
+                        logger.error('Cloudinary upload error:', error);
+                        reject(new ApiError(500, `Failed to upload image: ${error.message}`));
+                    } else {
+                        logger.info(`Image uploaded successfully: ${result.secure_url}`);
+                        resolve({
+                            url: result.secure_url,
+                            publicId: result.public_id
+                        });
+                    }
+                }
+            );
+
+            // Convert buffer to stream and pipe to Cloudinary
+            const readableStream = Readable.from(buffer);
+            readableStream.pipe(uploadStream);
         });
-
-        logger.info(`Image uploaded successfully: ${result.secure_url}`);
-
-        // Delete local file after upload
-        await fs.unlink(filePath).catch(err =>
-            logger.warn(`Failed to delete local file ${filePath}:`, err.message)
-        );
-
-        return {
-            url: result.secure_url,
-            publicId: result.public_id
-        };
     } catch (error) {
         logger.error('Failed to upload image to Cloudinary:', error.message);
         throw new ApiError(500, `Failed to upload image: ${error.message}`);
@@ -43,33 +51,41 @@ export const uploadImage = async (filePath, originalName) => {
 };
 
 /**
- * Upload video to Cloudinary
- * @param {string} filePath - Local file path
+ * Upload video to Cloudinary from Buffer
+ * @param {Buffer} buffer - File buffer from multer memory storage
  * @param {string} originalName - Original filename
  * @returns {Promise<{url: string, publicId: string}>}
  */
-export const uploadVideo = async (filePath, originalName) => {
+export const uploadVideo = async (buffer, originalName) => {
     try {
         logger.info(`Uploading video to Cloudinary: ${originalName}`);
 
-        const result = await cloudinary.uploader.upload(filePath, {
-            folder: 'whatsapp-campaigns/videos',
-            resource_type: 'video',
-            use_filename: true,
-            unique_filename: true
+        return new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    folder: 'whatsapp-campaigns/videos',
+                    resource_type: 'video',
+                    use_filename: true,
+                    unique_filename: true
+                },
+                (error, result) => {
+                    if (error) {
+                        logger.error('Cloudinary upload error:', error);
+                        reject(new ApiError(500, `Failed to upload video: ${error.message}`));
+                    } else {
+                        logger.info(`Video uploaded successfully: ${result.secure_url}`);
+                        resolve({
+                            url: result.secure_url,
+                            publicId: result.public_id
+                        });
+                    }
+                }
+            );
+
+            // Convert buffer to stream and pipe to Cloudinary
+            const readableStream = Readable.from(buffer);
+            readableStream.pipe(uploadStream);
         });
-
-        logger.info(`Video uploaded successfully: ${result.secure_url}`);
-
-        // Delete local file after upload
-        await fs.unlink(filePath).catch(err =>
-            logger.warn(`Failed to delete local file ${filePath}:`, err.message)
-        );
-
-        return {
-            url: result.secure_url,
-            publicId: result.public_id
-        };
     } catch (error) {
         logger.error('Failed to upload video to Cloudinary:', error.message);
         throw new ApiError(500, `Failed to upload video: ${error.message}`);
@@ -101,3 +117,4 @@ export default {
     uploadVideo,
     deleteFile
 };
+
