@@ -124,7 +124,8 @@ export const createCampaign = async (req, res, next) => {
             logger.info('Uploading media to Cloudinary...');
 
             // Dynamically import cloudinary service
-            const cloudinaryService = await import('../services/cloudinary.service.js');
+            const cloudinaryServiceModule = await import('../services/cloudinary.service.js');
+            const cloudinaryService = cloudinaryServiceModule.default;
 
             let uploadResult;
             if (mediaType === 'image') {
