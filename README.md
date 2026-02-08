@@ -44,15 +44,35 @@ cd marketing-dashboard
 npm install
 ```
 
-3. Start the server
+```
+
+## Configuration
+
+### Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
 
 ```bash
-# Development mode with auto-reload
-npm run dev
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+SERVER_BASE_URL=http://localhost:5000  # IMPORTANT: Change to your public URL in production
 
-# Production mode
-npm start
+# Database
+MONGODB_URI=your_mongodb_connection_string
+
+# UltraMessage WhatsApp API
+ULTRAMESSAGE_INSTANCE_ID=your_instance_id
+ULTRAMESSAGE_TOKEN=your_token
+ULTRAMESSAGE_BASE_URL=https://api.ultramsg.com/instance_id/
+
+# Messaging Configuration
+MESSAGE_DELAY_MS=1500
 ```
+
+> **Important**: For production deployments, set `SERVER_BASE_URL` to your public domain (e.g., `https://yourdomain.com`). This is required for the WhatsApp API to download and send media files (images/videos).
+
+
 
 ## API Endpoints
 

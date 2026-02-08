@@ -18,7 +18,7 @@ export const createCampaignSchema = Joi.object({
         .when('mediaType', {
             is: 'text',
             then: Joi.required(),
-            otherwise: Joi.optional()
+            otherwise: Joi.optional().allow('')
         })
         .messages({
             'string.empty': 'Message is required for text messages',

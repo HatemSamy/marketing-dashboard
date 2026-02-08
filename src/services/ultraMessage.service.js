@@ -52,6 +52,13 @@ const sendTextMessage = async (phone, message) => {
             body: message
         });
 
+        // Check for API errors in response body
+        if (response.data?.error) {
+            const errorMsg = JSON.stringify(response.data.error);
+            logger.error(`UltraMessage API error for text message to ${phone}:`, errorMsg);
+            throw new ApiError(400, `WhatsApp API error: ${errorMsg}`);
+        }
+
         logger.info(`Text message sent successfully to ${phone}`);
         return response.data;
     } catch (error) {
@@ -72,17 +79,39 @@ const sendImageMessage = async (phone, imageUrl, caption = '') => {
         initialize(); // Ensure service is initialized
 
         logger.info(`Sending image message to ${phone}`);
+        logger.info(`Image URL: ${imageUrl}`);
+        logger.info(`Caption: ${caption}`);
 
-        const response = await client.post('/messages/image', {
+        const requestData = {
             to: phone,
             image: imageUrl,
             caption: caption
-        });
+        };
+
+        logger.info('Image request data:', requestData);
+
+        const response = await client.post('/messages/image', requestData);
+
+        logger.info('API Response:', response.data);
+
+        // Check for API errors in response body
+        if (response.data?.error) {
+            const errorMsg = JSON.stringify(response.data.error);
+            logger.error(`UltraMessage API error for image message to ${phone}:`, errorMsg);
+            throw new ApiError(400, `WhatsApp API error: ${errorMsg}`);
+        }
 
         logger.info(`Image message sent successfully to ${phone}`);
         return response.data;
     } catch (error) {
         logger.error(`Failed to send image message to ${phone}:`, error.message);
+        if (error.response) {
+            logger.error('API Error Response:', {
+                status: error.response.status,
+                data: error.response.data,
+                headers: error.response.headers
+            });
+        }
         throw handleError(error, phone);
     }
 };
@@ -99,17 +128,39 @@ const sendVideoMessage = async (phone, videoUrl, caption = '') => {
         initialize(); // Ensure service is initialized
 
         logger.info(`Sending video message to ${phone}`);
+        logger.info(`Video URL: ${videoUrl}`);
+        logger.info(`Caption: ${caption}`);
 
-        const response = await client.post('/messages/video', {
+        const requestData = {
             to: phone,
             video: videoUrl,
             caption: caption
-        });
+        };
+
+        logger.info('Video request data:', requestData);
+
+        const response = await client.post('/messages/video', requestData);
+
+        logger.info('API Response:', response.data);
+
+        // Check for API errors in response body
+        if (response.data?.error) {
+            const errorMsg = JSON.stringify(response.data.error);
+            logger.error(`UltraMessage API error for video message to ${phone}:`, errorMsg);
+            throw new ApiError(400, `WhatsApp API error: ${errorMsg}`);
+        }
 
         logger.info(`Video message sent successfully to ${phone}`);
         return response.data;
     } catch (error) {
         logger.error(`Failed to send video message to ${phone}:`, error.message);
+        if (error.response) {
+            logger.error('API Error Response:', {
+                status: error.response.status,
+                data: error.response.data,
+                headers: error.response.headers
+            });
+        }
         throw handleError(error, phone);
     }
 };
